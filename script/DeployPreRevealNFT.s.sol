@@ -12,11 +12,10 @@ contract DeployPreRevealNFT is Script, CodeConstants {
         return deployPreRevealNFT("PreReveal", "PR721", DEFAULT_MAX_SUPPLY);
     }
 
-    function deployPreRevealNFT(
-        string memory name,
-        string memory symbol,
-        uint256 maxSupply
-    ) public returns (PreRevealNFT, MintStageRegistry, HelperConfig) {
+    function deployPreRevealNFT(string memory name, string memory symbol, uint256 maxSupply)
+        public
+        returns (PreRevealNFT, MintStageRegistry, HelperConfig)
+    {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
 

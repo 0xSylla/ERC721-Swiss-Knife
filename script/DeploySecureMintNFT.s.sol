@@ -12,11 +12,10 @@ contract DeploySecureMintNFT is Script, CodeConstants {
         return deploySecureMintNFT("SecureMint", "SM721", DEFAULT_MAX_SUPPLY);
     }
 
-    function deploySecureMintNFT(
-        string memory name,
-        string memory symbol,
-        uint256 maxSupply
-    ) public returns (SecureMintNFT, MintStageRegistry, HelperConfig) {
+    function deploySecureMintNFT(string memory name, string memory symbol, uint256 maxSupply)
+        public
+        returns (SecureMintNFT, MintStageRegistry, HelperConfig)
+    {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
 

@@ -12,11 +12,10 @@ contract DeployOmnichainNFT is Script, CodeConstants {
         return deployOmnichainNFT("Omnichain", "O721", DEFAULT_MAX_SUPPLY);
     }
 
-    function deployOmnichainNFT(
-        string memory name,
-        string memory symbol,
-        uint256 maxSupply
-    ) public returns (BaseNFTOmnichain, MintStageRegistry, HelperConfig) {
+    function deployOmnichainNFT(string memory name, string memory symbol, uint256 maxSupply)
+        public
+        returns (BaseNFTOmnichain, MintStageRegistry, HelperConfig)
+    {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
 

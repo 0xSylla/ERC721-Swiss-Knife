@@ -38,20 +38,10 @@ contract BaseNFTERC20 is OwnableBasic, ERC721AC, BasicRoyalties {
     uint256 public s_totalAirdropped;
 
     event BaseURIUpdated(string baseURI);
-    event NFTsMinted(
-        address indexed recipient,
-        uint256 amount,
-        uint256 stageId
-    );
-    event NFTsAirdropped(
-        address[] recipients,
-        uint256 amountPerRecipient,
-        uint256 totalAmount
-    );
+    event NFTsMinted(address indexed recipient, uint256 amount, uint256 stageId);
+    event NFTsAirdropped(address[] recipients, uint256 amountPerRecipient, uint256 totalAmount);
 
-    constructor(
-        BaseNFTERC20Params.InitParams memory _params
-    )
+    constructor(BaseNFTERC20Params.InitParams memory _params)
         ERC721AC(_params.collectionName, _params.collectionSymbol)
         OwnableBasic(_params.collectionOwner)
         BasicRoyalties(_params.royaltyReceiver, _params.royaltyFeeBps)
@@ -71,19 +61,12 @@ contract BaseNFTERC20 is OwnableBasic, ERC721AC, BasicRoyalties {
      * @param stageId  The stage to mint through
      * @param amount   Number of tokens to mint
      */
-    function batchMint(
-        uint256 stageId,
-        uint256 amount
-    ) external virtual {
+    function batchMint(uint256 stageId, uint256 amount) external virtual {
         if (_totalMinted() + amount > i_maxSupply) {
             revert ExceedsMaxSupply(amount, i_maxSupply - _totalMinted());
         }
 
-        uint256 totalCost = i_registry.validateAndRecordMint(
-            stageId,
-            msg.sender,
-            amount
-        );
+        uint256 totalCost = i_registry.validateAndRecordMint(stageId, msg.sender, amount);
 
         if (totalCost > 0) {
             i_paymentToken.safeTransferFrom(msg.sender, address(this), totalCost);
@@ -99,12 +82,10 @@ contract BaseNFTERC20 is OwnableBasic, ERC721AC, BasicRoyalties {
      * @param to     Array of recipient addresses
      * @param amount Number of tokens each recipient receives
      */
-    function batchAirdrop(
-        address[] calldata to,
-        uint256 amount
-    ) external virtual onlyOwner {
-        if (to.length == 0 || amount == 0)
+    function batchAirdrop(address[] calldata to, uint256 amount) external virtual onlyOwner {
+        if (to.length == 0 || amount == 0) {
             revert InvalidOperation("Empty list or zero amount");
+        }
 
         uint256 totalToMint = to.length * amount;
 
@@ -113,9 +94,7 @@ contract BaseNFTERC20 is OwnableBasic, ERC721AC, BasicRoyalties {
         }
 
         uint256 stageAllocated = i_registry.getTotalStageMaxSupply();
-        uint256 reservedForAirdrops = i_maxSupply > stageAllocated
-            ? i_maxSupply - stageAllocated
-            : 0;
+        uint256 reservedForAirdrops = i_maxSupply > stageAllocated ? i_maxSupply - stageAllocated : 0;
 
         if (s_totalAirdropped + totalToMint > reservedForAirdrops) {
             revert InvalidOperation("Airdrop exceeds unreserved supply");
@@ -156,11 +135,7 @@ contract BaseNFTERC20 is OwnableBasic, ERC721AC, BasicRoyalties {
         _setDefaultRoyalty(receiver, feeNumerator);
     }
 
-    function setTokenRoyalty(
-        uint256 tokenId,
-        address receiver,
-        uint96 feeNumerator
-    ) external {
+    function setTokenRoyalty(uint256 tokenId, address receiver, uint96 feeNumerator) external {
         _requireCallerIsContractOwner();
         _setTokenRoyalty(tokenId, receiver, feeNumerator);
     }
@@ -195,25 +170,15 @@ contract BaseNFTERC20 is OwnableBasic, ERC721AC, BasicRoyalties {
         airdropped = s_totalAirdropped;
 
         uint256 allocated = stagesAllocated + s_totalAirdropped;
-        availableForNewStages = allocated < i_maxSupply
-            ? i_maxSupply - allocated
-            : 0;
+        availableForNewStages = allocated < i_maxSupply ? i_maxSupply - allocated : 0;
 
-        uint256 airdropBudget = i_maxSupply > stagesAllocated
-            ? i_maxSupply - stagesAllocated
-            : 0;
-        availableForAirdrops = airdropBudget > s_totalAirdropped
-            ? airdropBudget - s_totalAirdropped
-            : 0;
+        uint256 airdropBudget = i_maxSupply > stagesAllocated ? i_maxSupply - stagesAllocated : 0;
+        availableForAirdrops = airdropBudget > s_totalAirdropped ? airdropBudget - s_totalAirdropped : 0;
     }
 
     // ─── Interface Support ───────────────────────────────────────────────────
 
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view virtual override(ERC721AC, ERC2981) returns (bool) {
-        return
-            ERC721AC.supportsInterface(interfaceId) ||
-            ERC2981.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721AC, ERC2981) returns (bool) {
+        return ERC721AC.supportsInterface(interfaceId) || ERC2981.supportsInterface(interfaceId);
     }
 }

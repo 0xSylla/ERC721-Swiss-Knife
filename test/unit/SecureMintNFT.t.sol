@@ -20,9 +20,8 @@ contract SecureMintNFTTest is Test, CodeConstants {
     uint256 public stageId;
 
     // Must match the MINT_TYPEHASH in SecureMintNFT
-    bytes32 private constant MINT_TYPEHASH = keccak256(
-        "Mint(address minter,uint256 stageId,uint256 amount,uint256 nonce,uint256 deadline)"
-    );
+    bytes32 private constant MINT_TYPEHASH =
+        keccak256("Mint(address minter,uint256 stageId,uint256 amount,uint256 nonce,uint256 deadline)");
 
     function setUp() external {
         // Use a deterministic key for the signer
@@ -55,33 +54,19 @@ contract SecureMintNFTTest is Test, CodeConstants {
 
         // Create a public stage
         stageId = registry.addStage(
-            "Public Sale",
-            0.01 ether,
-            50,
-            10,
-            false,
-            block.timestamp,
-            block.timestamp + 30 days,
-            true,
-            false
+            "Public Sale", 0.01 ether, 50, 10, false, block.timestamp, block.timestamp + 30 days, true, false
         );
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
-    function _signMint(
-        address minter,
-        uint256 _stageId,
-        uint256 amount,
-        uint256 nonce,
-        uint256 deadline
-    ) internal view returns (bytes memory) {
-        bytes32 structHash = keccak256(
-            abi.encode(MINT_TYPEHASH, minter, _stageId, amount, nonce, deadline)
-        );
-        bytes32 digest = keccak256(
-            abi.encodePacked("\x19\x01", nft.DOMAIN_SEPARATOR(), structHash)
-        );
+    function _signMint(address minter, uint256 _stageId, uint256 amount, uint256 nonce, uint256 deadline)
+        internal
+        view
+        returns (bytes memory)
+    {
+        bytes32 structHash = keccak256(abi.encode(MINT_TYPEHASH, minter, _stageId, amount, nonce, deadline));
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", nft.DOMAIN_SEPARATOR(), structHash));
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(SIGNER_KEY, digest);
         return abi.encodePacked(r, s, v);
     }
@@ -142,12 +127,8 @@ contract SecureMintNFTTest is Test, CodeConstants {
         uint256 fakeKey = 0xBAD;
         uint256 deadline = block.timestamp + 1 hours;
 
-        bytes32 structHash = keccak256(
-            abi.encode(MINT_TYPEHASH, USER, stageId, 1, 0, deadline)
-        );
-        bytes32 digest = keccak256(
-            abi.encodePacked("\x19\x01", nft.DOMAIN_SEPARATOR(), structHash)
-        );
+        bytes32 structHash = keccak256(abi.encode(MINT_TYPEHASH, USER, stageId, 1, 0, deadline));
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", nft.DOMAIN_SEPARATOR(), structHash));
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(fakeKey, digest);
         bytes memory badSig = abi.encodePacked(r, s, v);
 

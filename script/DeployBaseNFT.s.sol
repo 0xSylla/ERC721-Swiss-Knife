@@ -11,11 +11,10 @@ contract DeployBaseNFT is Script, CodeConstants {
         return deployBaseNFT("SwissKnife", "SK721", DEFAULT_MAX_SUPPLY);
     }
 
-    function deployBaseNFT(
-        string memory name,
-        string memory symbol,
-        uint256 maxSupply
-    ) public returns (BaseNFT, MintStageRegistry, HelperConfig) {
+    function deployBaseNFT(string memory name, string memory symbol, uint256 maxSupply)
+        public
+        returns (BaseNFT, MintStageRegistry, HelperConfig)
+    {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
 

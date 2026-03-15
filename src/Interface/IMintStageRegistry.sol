@@ -9,20 +9,19 @@ pragma solidity ^0.8.20;
  *      from the multi-collection version have been removed.
  */
 interface IMintStageRegistry {
-
     // ─── Structs ─────────────────────────────────────────────────────────────
 
     struct MintStage {
-        string  name;
+        string name;
         uint256 price;
         uint256 maxSupply;
         uint256 maxPerWallet;
         uint256 minted;
-        bool    isActive;
-        bool    requiresAllowlist;
-        bool    isGTD;       // true = GTD, no oversubscription; false = FCFS, 120% allowed
-        uint256 startTime;   // 0 = no restriction
-        uint256 endTime;     // 0 = no restriction
+        bool isActive;
+        bool requiresAllowlist;
+        bool isGTD; // true = GTD, no oversubscription; false = FCFS, 120% allowed
+        uint256 startTime; // 0 = no restriction
+        uint256 endTime; // 0 = no restriction
     }
 
     // ─── Events ───────────────────────────────────────────────────────────────
@@ -110,11 +109,7 @@ interface IMintStageRegistry {
      *      Reverts with a specific error if any condition fails.
      * @return totalCost Total ETH required for this mint (price * amount).
      */
-    function validateAndRecordMint(
-        uint256 stageId,
-        address user,
-        uint256 amount
-    ) external returns (uint256 totalCost);
+    function validateAndRecordMint(uint256 stageId, address user, uint256 amount) external returns (uint256 totalCost);
 
     // ─── View Functions ───────────────────────────────────────────────────────
 
@@ -129,45 +124,41 @@ interface IMintStageRegistry {
      */
     function getRemainingAllocatable() external view returns (uint256);
 
-    function getUserMintAllowance(
-        uint256 stageId,
-        address user
-    ) external view returns (
-        uint256 maxAllowed,
-        uint256 alreadyMinted,
-        uint256 canStillMint,
-        bool isAllowlisted
-    );
+    function getUserMintAllowance(uint256 stageId, address user)
+        external
+        view
+        returns (uint256 maxAllowed, uint256 alreadyMinted, uint256 canStillMint, bool isAllowlisted);
 
-    function canUserMint(
-        uint256 stageId,
-        address user,
-        uint256 amount
-    ) external view returns (bool eligible, string memory reason);
+    function canUserMint(uint256 stageId, address user, uint256 amount)
+        external
+        view
+        returns (bool eligible, string memory reason);
 
     function getActiveStages() external view returns (uint256[] memory activeStageIds);
 
-    function getAllStages() external view returns (
-        uint256[] memory stageIds,
-        string[] memory names,
-        uint256[] memory prices,
-        uint256[] memory maxSupplies,
-        uint256[] memory mintedAmounts,
-        bool[] memory activeStatuses
-    );
+    function getAllStages()
+        external
+        view
+        returns (
+            uint256[] memory stageIds,
+            string[] memory names,
+            uint256[] memory prices,
+            uint256[] memory maxSupplies,
+            uint256[] memory mintedAmounts,
+            bool[] memory activeStatuses
+        );
 
     function getTotalRevenue() external view returns (uint256);
 
-    function getRevenueByStage(uint256 stageId) external view returns (
-        uint256 revenueGenerated,
-        uint256 potentialRevenue
-    );
+    function getRevenueByStage(uint256 stageId)
+        external
+        view
+        returns (uint256 revenueGenerated, uint256 potentialRevenue);
 
-    function getUserMintHistory(address user) external view returns (
-        uint256[] memory stageIds,
-        uint256[] memory amountsMinted,
-        uint256 totalMintedByUser
-    );
+    function getUserMintHistory(address user)
+        external
+        view
+        returns (uint256[] memory stageIds, uint256[] memory amountsMinted, uint256 totalMintedByUser);
 
     function isAllowlisted(uint256 stageId, address user) external view returns (bool);
     function getAllowlistCount(uint256 stageId) external view returns (uint256);

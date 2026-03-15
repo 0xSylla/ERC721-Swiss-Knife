@@ -13,17 +13,18 @@ contract AddPublicStage is Script {
     function run(address registry) external {
         vm.startBroadcast();
 
-        MintStageRegistry(registry).addStage(
-            "Public Sale",          // name
-            0.01 ether,             // price
-            5000,                   // maxSupply for stage
-            100,                    // maxPerWallet
-            false,                  // requiresAllowlist
-            block.timestamp,        // startTime (now)
-            block.timestamp + 30 days, // endTime
-            true,                   // isActive
-            false                   // isGTD (FCFS)
-        );
+        MintStageRegistry(registry)
+            .addStage(
+                "Public Sale", // name
+                0.01 ether, // price
+                5000, // maxSupply for stage
+                100, // maxPerWallet
+                false, // requiresAllowlist
+                block.timestamp, // startTime (now)
+                block.timestamp + 30 days, // endTime
+                true, // isActive
+                false // isGTD (FCFS)
+            );
 
         vm.stopBroadcast();
         console.log("Public FCFS stage added to registry:", registry);
@@ -37,17 +38,18 @@ contract AddAllowlistStage is Script {
     function run(address registry) external {
         vm.startBroadcast();
 
-        MintStageRegistry(registry).addStage(
-            "Allowlist Sale",       // name
-            0.005 ether,            // price (discounted)
-            2000,                   // maxSupply for stage
-            3,                      // maxPerWallet
-            true,                   // requiresAllowlist
-            block.timestamp,        // startTime
-            block.timestamp + 7 days, // endTime
-            true,                   // isActive
-            true                    // isGTD
-        );
+        MintStageRegistry(registry)
+            .addStage(
+                "Allowlist Sale", // name
+                0.005 ether, // price (discounted)
+                2000, // maxSupply for stage
+                3, // maxPerWallet
+                true, // requiresAllowlist
+                block.timestamp, // startTime
+                block.timestamp + 7 days, // endTime
+                true, // isActive
+                true // isGTD
+            );
 
         vm.stopBroadcast();
         console.log("Allowlist GTD stage added to registry:", registry);

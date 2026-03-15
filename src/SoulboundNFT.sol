@@ -15,12 +15,11 @@ contract SoulboundNFT is BaseNFT {
 
     constructor(BaseNFTParams.InitParams memory _params) BaseNFT(_params) {}
 
-    function _beforeTokenTransfers(
-        address from,
-        address to,
-        uint256 startTokenId,
-        uint256 quantity
-    ) internal virtual override {
+    function _beforeTokenTransfers(address from, address to, uint256 startTokenId, uint256 quantity)
+        internal
+        virtual
+        override
+    {
         // Allow mints (from == 0) and burns (to == 0), block transfers
         if (from != address(0) && to != address(0)) {
             revert TokenIsSoulbound();
@@ -40,12 +39,11 @@ contract SoulboundNFTERC20 is BaseNFTERC20 {
 
     constructor(BaseNFTERC20Params.InitParams memory _params) BaseNFTERC20(_params) {}
 
-    function _beforeTokenTransfers(
-        address from,
-        address to,
-        uint256 startTokenId,
-        uint256 quantity
-    ) internal virtual override {
+    function _beforeTokenTransfers(address from, address to, uint256 startTokenId, uint256 quantity)
+        internal
+        virtual
+        override
+    {
         if (from != address(0) && to != address(0)) {
             revert TokenIsSoulbound();
         }

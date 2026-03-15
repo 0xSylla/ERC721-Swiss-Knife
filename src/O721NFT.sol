@@ -25,11 +25,7 @@ contract BaseNFTOmnichain is BaseNFT, OApp, OAppOptionsType3, IONFT721 {
 
     error InvalidEndpoint();
 
-    constructor(
-        BaseNFTParams.InitParams memory _params,
-        address _lzEndpoint,
-        address _delegate
-    )
+    constructor(BaseNFTParams.InitParams memory _params, address _lzEndpoint, address _delegate)
         BaseNFT(_params)
         OApp(_lzEndpoint, _delegate)
     {
@@ -50,19 +46,16 @@ contract BaseNFTOmnichain is BaseNFT, OApp, OAppOptionsType3, IONFT721 {
         return false;
     }
 
-    function quoteSend(
-        SendParam calldata _sendParam,
-        bool _payInLzToken
-    ) external view returns (MessagingFee memory) {
+    function quoteSend(SendParam calldata _sendParam, bool _payInLzToken) external view returns (MessagingFee memory) {
         (bytes memory message, bytes memory options) = _buildMsgAndOptions(_sendParam);
         return _quote(_sendParam.dstEid, message, options, _payInLzToken);
     }
 
-    function send(
-        SendParam calldata _sendParam,
-        MessagingFee calldata _fee,
-        address _refundAddress
-    ) external payable returns (MessagingReceipt memory msgReceipt) {
+    function send(SendParam calldata _sendParam, MessagingFee calldata _fee, address _refundAddress)
+        external
+        payable
+        returns (MessagingReceipt memory msgReceipt)
+    {
         _debit(msg.sender, _sendParam.tokenId, _sendParam.dstEid);
 
         (bytes memory message, bytes memory options) = _buildMsgAndOptions(_sendParam);
@@ -73,17 +66,15 @@ contract BaseNFTOmnichain is BaseNFT, OApp, OAppOptionsType3, IONFT721 {
 
     // ─── Internal: Message Building ──────────────────────────────────────────
 
-    function _buildMsgAndOptions(
-        SendParam calldata _sendParam
-    ) internal view returns (bytes memory message, bytes memory options) {
+    function _buildMsgAndOptions(SendParam calldata _sendParam)
+        internal
+        view
+        returns (bytes memory message, bytes memory options)
+    {
         if (_sendParam.to == bytes32(0)) revert InvalidReceiver();
 
         bool hasCompose;
-        (message, hasCompose) = ONFT721MsgCodec.encode(
-            _sendParam.to,
-            _sendParam.tokenId,
-            _sendParam.composeMsg
-        );
+        (message, hasCompose) = ONFT721MsgCodec.encode(_sendParam.to, _sendParam.tokenId, _sendParam.composeMsg);
 
         uint16 msgType = hasCompose ? SEND_AND_COMPOSE : SEND;
         options = combineOptions(_sendParam.dstEid, msgType, _sendParam.extraOptions);
@@ -91,24 +82,17 @@ contract BaseNFTOmnichain is BaseNFT, OApp, OAppOptionsType3, IONFT721 {
 
     // ─── Internal: LayerZero Receive ─────────────────────────────────────────
 
-    function _lzReceive(
-        Origin calldata _origin,
-        bytes32 _guid,
-        bytes calldata _message,
-        address,
-        bytes calldata
-    ) internal override {
+    function _lzReceive(Origin calldata _origin, bytes32 _guid, bytes calldata _message, address, bytes calldata)
+        internal
+        override
+    {
         address toAddress = _message.sendTo().bytes32ToAddress();
         uint256 tokenId_ = _message.tokenId();
 
         _credit(toAddress, tokenId_, _origin.srcEid);
 
         if (_message.isComposed()) {
-            bytes memory composeMsg = ONFTComposeMsgCodec.encode(
-                _origin.nonce,
-                _origin.srcEid,
-                _message.composeMsg()
-            );
+            bytes memory composeMsg = ONFTComposeMsgCodec.encode(_origin.nonce, _origin.srcEid, _message.composeMsg());
             endpoint.sendCompose(toAddress, _guid, 0, composeMsg);
         }
 
@@ -129,14 +113,8 @@ contract BaseNFTOmnichain is BaseNFT, OApp, OAppOptionsType3, IONFT721 {
 
     // ─── View ────────────────────────────────────────────────────────────────
 
-    function isOwnerOrApproved(
-        address _owner,
-        address _spender,
-        uint256 _tokenId
-    ) public view returns (bool) {
-        return _owner == _spender ||
-            getApproved(_tokenId) == _spender ||
-            isApprovedForAll(_owner, _spender);
+    function isOwnerOrApproved(address _owner, address _spender, uint256 _tokenId) public view returns (bool) {
+        return _owner == _spender || getApproved(_tokenId) == _spender || isApprovedForAll(_owner, _spender);
     }
 
     function getEndpoint() external view returns (address) {
@@ -149,21 +127,12 @@ contract BaseNFTOmnichain is BaseNFT, OApp, OAppOptionsType3, IONFT721 {
 
     // ─── Override Resolution ─────────────────────────────────────────────────
 
-    function owner()
-        public
-        view
-        override(Ownable)
-        returns (address)
-    {
+    function owner() public view override(Ownable) returns (address) {
         return Ownable.owner();
     }
 
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view override returns (bool) {
-        return
-            interfaceId == type(IONFT721).interfaceId ||
-            super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
+        return interfaceId == type(IONFT721).interfaceId || super.supportsInterface(interfaceId);
     }
 
     // ─── Receive (for LZ fees) ───────────────────────────────────────────────

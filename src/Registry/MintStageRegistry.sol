@@ -33,7 +33,6 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  *   - All state-mutating functions are guarded with `nonReentrant`.
  */
 contract MintStageRegistry is IMintStageRegistry, Ownable2Step, ReentrancyGuard {
-
     // ─── Storage ─────────────────────────────────────────────────────────────
 
     /// @notice The one and only collection this registry serves.
@@ -89,7 +88,7 @@ contract MintStageRegistry is IMintStageRegistry, Ownable2Step, ReentrancyGuard 
 
     function bindCollection(address collection) external onlyOwner {
         if (boundCollection != address(0)) revert CollectionAlreadyBound(boundCollection);
-        if (collection == address(0))      revert InvalidCollection();
+        if (collection == address(0)) revert InvalidCollection();
 
         boundCollection = collection;
         emit CollectionBound(collection);
@@ -161,13 +160,13 @@ contract MintStageRegistry is IMintStageRegistry, Ownable2Step, ReentrancyGuard 
 
         _totalStageMaxSupply = newTotal;
 
-        stage.name              = name;
-        stage.price             = price;
-        stage.maxSupply         = maxSupply;
-        stage.maxPerWallet      = maxPerWallet;
+        stage.name = name;
+        stage.price = price;
+        stage.maxSupply = maxSupply;
+        stage.maxPerWallet = maxPerWallet;
         stage.requiresAllowlist = requiresAllowlist;
-        stage.startTime         = startTime;
-        stage.endTime           = endTime;
+        stage.startTime = startTime;
+        stage.endTime = endTime;
 
         emit StageUpdated(boundCollection, stageId);
     }
@@ -182,10 +181,11 @@ contract MintStageRegistry is IMintStageRegistry, Ownable2Step, ReentrancyGuard 
     // ─── Allowlist Management ─────────────────────────────────────────────────
 
     /// @inheritdoc IMintStageRegistry
-    function batchAddToAllowlist(
-        uint256 stageId,
-        address[] calldata addresses
-    ) external onlyCollectionOwner nonReentrant {
+    function batchAddToAllowlist(uint256 stageId, address[] calldata addresses)
+        external
+        onlyCollectionOwner
+        nonReentrant
+    {
         _requireStageExists(stageId);
 
         MintStage storage stage = _stages[stageId];
@@ -216,10 +216,11 @@ contract MintStageRegistry is IMintStageRegistry, Ownable2Step, ReentrancyGuard 
     }
 
     /// @inheritdoc IMintStageRegistry
-    function batchRemoveFromAllowlist(
-        uint256 stageId,
-        address[] calldata addresses
-    ) external onlyCollectionOwner nonReentrant {
+    function batchRemoveFromAllowlist(uint256 stageId, address[] calldata addresses)
+        external
+        onlyCollectionOwner
+        nonReentrant
+    {
         _requireStageExists(stageId);
 
         MintStage storage stage = _stages[stageId];
@@ -238,11 +239,12 @@ contract MintStageRegistry is IMintStageRegistry, Ownable2Step, ReentrancyGuard 
     // ─── Mint Validation & Recording ──────────────────────────────────────────
 
     /// @inheritdoc IMintStageRegistry
-    function validateAndRecordMint(
-        uint256 stageId,
-        address user,
-        uint256 amount
-    ) external onlyBoundCollection nonReentrant returns (uint256 totalCost) {
+    function validateAndRecordMint(uint256 stageId, address user, uint256 amount)
+        external
+        onlyBoundCollection
+        nonReentrant
+        returns (uint256 totalCost)
+    {
         _requireStageExists(stageId);
 
         MintStage storage stage = _stages[stageId];
@@ -250,7 +252,7 @@ contract MintStageRegistry is IMintStageRegistry, Ownable2Step, ReentrancyGuard 
         if (!stage.isActive) revert StageInactive(stageId);
 
         if (stage.startTime > 0 && block.timestamp < stage.startTime) revert StageNotStarted(stageId);
-        if (stage.endTime   > 0 && block.timestamp > stage.endTime)   revert StageEnded(stageId);
+        if (stage.endTime > 0 && block.timestamp > stage.endTime) revert StageEnded(stageId);
 
         uint256 remaining = stage.maxSupply - stage.minted;
         if (amount > remaining) revert ExceedsStageSupply(amount, remaining);
@@ -264,9 +266,9 @@ contract MintStageRegistry is IMintStageRegistry, Ownable2Step, ReentrancyGuard 
             revert ExceedsMaxPerWallet(userMinted + amount, stage.maxPerWallet);
         }
 
-        stage.minted               += amount;
+        stage.minted += amount;
         _stageMints[stageId][user] += amount;
-        totalCost                   = stage.price * amount;
+        totalCost = stage.price * amount;
 
         emit MintRecorded(boundCollection, stageId, user, amount);
     }
@@ -292,43 +294,37 @@ contract MintStageRegistry is IMintStageRegistry, Ownable2Step, ReentrancyGuard 
      */
     function getRemainingAllocatable() external view whenBound returns (uint256) {
         uint256 collectionMax = ICollection(boundCollection).i_maxSupply();
-        return collectionMax > _totalStageMaxSupply
-            ? collectionMax - _totalStageMaxSupply
-            : 0;
+        return collectionMax > _totalStageMaxSupply ? collectionMax - _totalStageMaxSupply : 0;
     }
 
-    function getUserMintAllowance(
-        uint256 stageId,
-        address user
-    ) external view returns (
-        uint256 maxAllowed,
-        uint256 alreadyMinted,
-        uint256 canStillMint,
-        bool isAllowlisted_
-    ) {
+    function getUserMintAllowance(uint256 stageId, address user)
+        external
+        view
+        returns (uint256 maxAllowed, uint256 alreadyMinted, uint256 canStillMint, bool isAllowlisted_)
+    {
         _requireStageExists(stageId);
         MintStage storage stage = _stages[stageId];
 
-        maxAllowed     = stage.maxPerWallet;
-        alreadyMinted  = _stageMints[stageId][user];
-        canStillMint   = maxAllowed > alreadyMinted ? maxAllowed - alreadyMinted : 0;
+        maxAllowed = stage.maxPerWallet;
+        alreadyMinted = _stageMints[stageId][user];
+        canStillMint = maxAllowed > alreadyMinted ? maxAllowed - alreadyMinted : 0;
         isAllowlisted_ = stage.requiresAllowlist ? _allowlist[stageId][user] : true;
     }
 
-    function canUserMint(
-        uint256 stageId,
-        address user,
-        uint256 amount
-    ) external view returns (bool eligible, string memory reason) {
+    function canUserMint(uint256 stageId, address user, uint256 amount)
+        external
+        view
+        returns (bool eligible, string memory reason)
+    {
         if (stageId >= _nextStageId) return (false, "Stage does not exist");
 
         MintStage storage stage = _stages[stageId];
 
-        if (!stage.isActive)                                           return (false, "Stage is not active");
+        if (!stage.isActive) return (false, "Stage is not active");
         if (stage.startTime > 0 && block.timestamp < stage.startTime) return (false, "Stage has not started");
-        if (stage.endTime   > 0 && block.timestamp > stage.endTime)   return (false, "Stage has ended");
-        if (stage.minted + amount > stage.maxSupply)                   return (false, "Exceeds stage supply");
-        if (stage.requiresAllowlist && !_allowlist[stageId][user])    return (false, "Not in allowlist");
+        if (stage.endTime > 0 && block.timestamp > stage.endTime) return (false, "Stage has ended");
+        if (stage.minted + amount > stage.maxSupply) return (false, "Exceeds stage supply");
+        if (stage.requiresAllowlist && !_allowlist[stageId][user]) return (false, "Not in allowlist");
         if (_stageMints[stageId][user] + amount > stage.maxPerWallet) return (false, "Exceeds max per wallet");
 
         return (true, "Eligible to mint");
@@ -346,29 +342,33 @@ contract MintStageRegistry is IMintStageRegistry, Ownable2Step, ReentrancyGuard 
         }
     }
 
-    function getAllStages() external view returns (
-        uint256[] memory stageIds,
-        string[] memory names,
-        uint256[] memory prices,
-        uint256[] memory maxSupplies,
-        uint256[] memory mintedAmounts,
-        bool[] memory activeStatuses
-    ) {
-        uint256 count  = _nextStageId;
-        stageIds       = new uint256[](count);
-        names          = new string[](count);
-        prices         = new uint256[](count);
-        maxSupplies    = new uint256[](count);
-        mintedAmounts  = new uint256[](count);
+    function getAllStages()
+        external
+        view
+        returns (
+            uint256[] memory stageIds,
+            string[] memory names,
+            uint256[] memory prices,
+            uint256[] memory maxSupplies,
+            uint256[] memory mintedAmounts,
+            bool[] memory activeStatuses
+        )
+    {
+        uint256 count = _nextStageId;
+        stageIds = new uint256[](count);
+        names = new string[](count);
+        prices = new uint256[](count);
+        maxSupplies = new uint256[](count);
+        mintedAmounts = new uint256[](count);
         activeStatuses = new bool[](count);
 
         for (uint256 i = 0; i < count; i++) {
             MintStage storage s = _stages[i];
-            stageIds[i]       = i;
-            names[i]          = s.name;
-            prices[i]         = s.price;
-            maxSupplies[i]    = s.maxSupply;
-            mintedAmounts[i]  = s.minted;
+            stageIds[i] = i;
+            names[i] = s.name;
+            prices[i] = s.price;
+            maxSupplies[i] = s.maxSupply;
+            mintedAmounts[i] = s.minted;
             activeStatuses[i] = s.isActive;
         }
     }
@@ -379,27 +379,28 @@ contract MintStageRegistry is IMintStageRegistry, Ownable2Step, ReentrancyGuard 
         }
     }
 
-    function getRevenueByStage(uint256 stageId) external view returns (
-        uint256 revenueGenerated,
-        uint256 potentialRevenue
-    ) {
+    function getRevenueByStage(uint256 stageId)
+        external
+        view
+        returns (uint256 revenueGenerated, uint256 potentialRevenue)
+    {
         _requireStageExists(stageId);
         MintStage storage s = _stages[stageId];
         revenueGenerated = s.minted * s.price;
         potentialRevenue = s.maxSupply * s.price;
     }
 
-    function getUserMintHistory(address user) external view returns (
-        uint256[] memory stageIds,
-        uint256[] memory amountsMinted,
-        uint256 totalMintedByUser
-    ) {
-        stageIds      = new uint256[](_nextStageId);
+    function getUserMintHistory(address user)
+        external
+        view
+        returns (uint256[] memory stageIds, uint256[] memory amountsMinted, uint256 totalMintedByUser)
+    {
+        stageIds = new uint256[](_nextStageId);
         amountsMinted = new uint256[](_nextStageId);
 
         for (uint256 i = 0; i < _nextStageId; i++) {
-            stageIds[i]       = i;
-            amountsMinted[i]  = _stageMints[i][user];
+            stageIds[i] = i;
+            amountsMinted[i] = _stageMints[i][user];
             totalMintedByUser += amountsMinted[i];
         }
     }
@@ -418,13 +419,11 @@ contract MintStageRegistry is IMintStageRegistry, Ownable2Step, ReentrancyGuard 
         if (stageId >= _nextStageId) revert StageDoesNotExist(stageId);
     }
 
-    function _validateStageConfig(
-        uint256 maxSupply,
-        uint256 maxPerWallet,
-        uint256 startTime,
-        uint256 endTime
-    ) internal pure {
-        if (maxSupply == 0)    revert InvalidStageConfig("Max supply cannot be zero");
+    function _validateStageConfig(uint256 maxSupply, uint256 maxPerWallet, uint256 startTime, uint256 endTime)
+        internal
+        pure
+    {
+        if (maxSupply == 0) revert InvalidStageConfig("Max supply cannot be zero");
         if (maxPerWallet == 0) revert InvalidStageConfig("Max per wallet cannot be zero");
         if (endTime != 0 && startTime != 0 && endTime <= startTime) {
             revert InvalidStageConfig("End time must be after start time");

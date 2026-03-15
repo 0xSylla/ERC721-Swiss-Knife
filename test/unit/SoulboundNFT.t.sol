@@ -27,15 +27,7 @@ contract SoulboundNFTTest is Test, CodeConstants {
 
         vm.startPrank(OWNER);
         stageId = registry.addStage(
-            "Public Sale",
-            0.01 ether,
-            50,
-            10,
-            false,
-            block.timestamp,
-            block.timestamp + 30 days,
-            true,
-            false
+            "Public Sale", 0.01 ether, 50, 10, false, block.timestamp, block.timestamp + 30 days, true, false
         );
         vm.stopPrank();
     }

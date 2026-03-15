@@ -12,11 +12,10 @@ contract DeploySoulboundNFT is Script, CodeConstants {
         return deploySoulboundNFT("Soulbound", "SB721", DEFAULT_MAX_SUPPLY);
     }
 
-    function deploySoulboundNFT(
-        string memory name,
-        string memory symbol,
-        uint256 maxSupply
-    ) public returns (SoulboundNFT, MintStageRegistry, HelperConfig) {
+    function deploySoulboundNFT(string memory name, string memory symbol, uint256 maxSupply)
+        public
+        returns (SoulboundNFT, MintStageRegistry, HelperConfig)
+    {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
 

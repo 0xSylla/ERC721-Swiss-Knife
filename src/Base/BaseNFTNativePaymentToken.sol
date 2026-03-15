@@ -35,20 +35,10 @@ contract BaseNFT is OwnableBasic, ERC721AC, BasicRoyalties {
     uint256 public s_totalAirdropped;
 
     event BaseURIUpdated(string baseURI);
-    event NFTsMinted(
-        address indexed recipient,
-        uint256 amount,
-        uint256 stageId
-    );
-    event NFTsAirdropped(
-        address[] recipients,
-        uint256 amountPerRecipient,
-        uint256 totalAmount
-    );
+    event NFTsMinted(address indexed recipient, uint256 amount, uint256 stageId);
+    event NFTsAirdropped(address[] recipients, uint256 amountPerRecipient, uint256 totalAmount);
 
-    constructor(
-        BaseNFTParams.InitParams memory _params
-    )
+    constructor(BaseNFTParams.InitParams memory _params)
         ERC721AC(_params.collectionName, _params.collectionSymbol)
         OwnableBasic(_params.collectionOwner)
         BasicRoyalties(_params.royaltyReceiver, _params.royaltyFeeBps)
@@ -68,10 +58,7 @@ contract BaseNFT is OwnableBasic, ERC721AC, BasicRoyalties {
      * @param stageId  The stage to mint through
      * @param amount   Number of tokens to mint
      */
-    function batchMint(
-        uint256 stageId,
-        uint256 amount
-    ) external payable virtual {
+    function batchMint(uint256 stageId, uint256 amount) external payable virtual {
         _executeMint(stageId, amount);
     }
 
@@ -87,11 +74,7 @@ contract BaseNFT is OwnableBasic, ERC721AC, BasicRoyalties {
         }
 
         // 2. Delegate all stage checks + record to registry (reverts on any failure)
-        uint256 totalCost = i_registry.validateAndRecordMint(
-            stageId,
-            msg.sender,
-            amount
-        );
+        uint256 totalCost = i_registry.validateAndRecordMint(stageId, msg.sender, amount);
 
         // 3. Payment check
         if (msg.value < totalCost) {
@@ -105,24 +88,23 @@ contract BaseNFT is OwnableBasic, ERC721AC, BasicRoyalties {
         unchecked {
             uint256 excess = msg.value - totalCost;
             if (excess > 0) {
-                (bool ok, ) = msg.sender.call{value: excess}("");
+                (bool ok,) = msg.sender.call{value: excess}("");
                 require(ok, "Refund failed");
             }
         }
 
         emit NFTsMinted(msg.sender, amount, stageId);
     }
+
     /**
      * @notice Owner-only batch airdrop. Respects stage-reserved supply.
      * @param to     Array of recipient addresses
      * @param amount Number of tokens each recipient receives
      */
-    function batchAirdrop(
-        address[] calldata to,
-        uint256 amount
-    ) external virtual onlyOwner {
-        if (to.length == 0 || amount == 0)
+    function batchAirdrop(address[] calldata to, uint256 amount) external virtual onlyOwner {
+        if (to.length == 0 || amount == 0) {
             revert InvalidOperation("Empty list or zero amount");
+        }
 
         uint256 totalToMint = to.length * amount;
 
@@ -133,9 +115,7 @@ contract BaseNFT is OwnableBasic, ERC721AC, BasicRoyalties {
 
         // Cannot eat into stage-reserved supply
         uint256 stageAllocated = i_registry.getTotalStageMaxSupply();
-        uint256 reservedForAirdrops = i_maxSupply > stageAllocated
-            ? i_maxSupply - stageAllocated
-            : 0;
+        uint256 reservedForAirdrops = i_maxSupply > stageAllocated ? i_maxSupply - stageAllocated : 0;
 
         if (s_totalAirdropped + totalToMint > reservedForAirdrops) {
             revert InvalidOperation("Airdrop exceeds unreserved supply");
@@ -179,11 +159,7 @@ contract BaseNFT is OwnableBasic, ERC721AC, BasicRoyalties {
         _setDefaultRoyalty(receiver, feeNumerator);
     }
 
-    function setTokenRoyalty(
-        uint256 tokenId,
-        address receiver,
-        uint96 feeNumerator
-    ) external {
+    function setTokenRoyalty(uint256 tokenId, address receiver, uint96 feeNumerator) external {
         _requireCallerIsContractOwner();
         _setTokenRoyalty(tokenId, receiver, feeNumerator);
     }
@@ -192,7 +168,7 @@ contract BaseNFT is OwnableBasic, ERC721AC, BasicRoyalties {
 
     function withdraw() external onlyOwner {
         require(address(this).balance > 0, "No balance to withdraw");
-        (bool success, ) = owner().call{value: address(this).balance}("");
+        (bool success,) = owner().call{value: address(this).balance}("");
         require(success, "Withdrawal failed");
     }
 
@@ -218,25 +194,15 @@ contract BaseNFT is OwnableBasic, ERC721AC, BasicRoyalties {
         airdropped = s_totalAirdropped;
 
         uint256 allocated = stagesAllocated + s_totalAirdropped;
-        availableForNewStages = allocated < i_maxSupply
-            ? i_maxSupply - allocated
-            : 0;
+        availableForNewStages = allocated < i_maxSupply ? i_maxSupply - allocated : 0;
 
-        uint256 airdropBudget = i_maxSupply > stagesAllocated
-            ? i_maxSupply - stagesAllocated
-            : 0;
-        availableForAirdrops = airdropBudget > s_totalAirdropped
-            ? airdropBudget - s_totalAirdropped
-            : 0;
+        uint256 airdropBudget = i_maxSupply > stagesAllocated ? i_maxSupply - stagesAllocated : 0;
+        availableForAirdrops = airdropBudget > s_totalAirdropped ? airdropBudget - s_totalAirdropped : 0;
     }
 
     // ─── Interface Support ────────────────────────────────────────────────────
 
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view virtual override(ERC721AC, ERC2981) returns (bool) {
-        return
-            ERC721AC.supportsInterface(interfaceId) ||
-            ERC2981.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721AC, ERC2981) returns (bool) {
+        return ERC721AC.supportsInterface(interfaceId) || ERC2981.supportsInterface(interfaceId);
     }
 }

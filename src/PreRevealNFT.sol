@@ -26,10 +26,7 @@ contract PreRevealNFT is BaseNFT {
     event Revealed(string baseURI);
     event PlaceholderURIUpdated(string placeholderURI);
 
-    constructor(
-        BaseNFTParams.InitParams memory _params,
-        string memory placeholderURI
-    ) BaseNFT(_params) {
+    constructor(BaseNFTParams.InitParams memory _params, string memory placeholderURI) BaseNFT(_params) {
         s_placeholderURI = placeholderURI;
     }
 
@@ -57,9 +54,7 @@ contract PreRevealNFT is BaseNFT {
      *         Before reveal: all tokens return the placeholder URI.
      *         After reveal:  standard baseURI + tokenId behavior.
      */
-    function tokenURI(
-        uint256 tokenId
-    ) public view override returns (string memory) {
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
         if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
 
         if (!s_revealed) {
@@ -73,9 +68,7 @@ contract PreRevealNFT is BaseNFT {
      * @notice Update the placeholder URI (only before reveal).
      * @param placeholderURI New placeholder URI
      */
-    function setPlaceholderURI(
-        string calldata placeholderURI
-    ) external onlyOwner {
+    function setPlaceholderURI(string calldata placeholderURI) external onlyOwner {
         if (s_revealed) revert AlreadyRevealed();
         s_placeholderURI = placeholderURI;
         emit PlaceholderURIUpdated(placeholderURI);

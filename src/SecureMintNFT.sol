@@ -28,19 +28,15 @@ contract SecureMintNFT is BaseNFT, EIP712 {
     error SignatureExpired();
     error InvalidSigner();
 
-    bytes32 private constant MINT_TYPEHASH = keccak256(
-        "Mint(address minter,uint256 stageId,uint256 amount,uint256 nonce,uint256 deadline)"
-    );
+    bytes32 private constant MINT_TYPEHASH =
+        keccak256("Mint(address minter,uint256 stageId,uint256 amount,uint256 nonce,uint256 deadline)");
 
     address public s_signer;
     mapping(address => uint256) public s_nonces;
 
     event SignerUpdated(address indexed oldSigner, address indexed newSigner);
 
-    constructor(
-        BaseNFTParams.InitParams memory _params,
-        address signer
-    )
+    constructor(BaseNFTParams.InitParams memory _params, address signer)
         BaseNFT(_params)
         EIP712(_params.collectionName, "1")
     {
@@ -57,19 +53,15 @@ contract SecureMintNFT is BaseNFT, EIP712 {
      * @param deadline  Signature expiry (unix timestamp)
      * @param signature Backend ECDSA signature over the EIP-712 typed data
      */
-    function secureBatchMint(
-        uint256 stageId,
-        uint256 amount,
-        uint256 deadline,
-        bytes calldata signature
-    ) external payable {
+    function secureBatchMint(uint256 stageId, uint256 amount, uint256 deadline, bytes calldata signature)
+        external
+        payable
+    {
         if (block.timestamp > deadline) revert SignatureExpired();
 
         uint256 currentNonce = s_nonces[msg.sender];
 
-        bytes32 structHash = keccak256(
-            abi.encode(MINT_TYPEHASH, msg.sender, stageId, amount, currentNonce, deadline)
-        );
+        bytes32 structHash = keccak256(abi.encode(MINT_TYPEHASH, msg.sender, stageId, amount, currentNonce, deadline));
         address recovered = _hashTypedDataV4(structHash).recover(signature);
         if (recovered != s_signer) revert InvalidSignature();
 

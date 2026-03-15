@@ -28,15 +28,7 @@ contract BaseNFTTest is Test, CodeConstants {
         // Create and activate a public FCFS stage
         vm.startPrank(OWNER);
         stageId = registry.addStage(
-            "Public Sale",
-            0.01 ether,
-            50,
-            10,
-            false,
-            block.timestamp,
-            block.timestamp + 30 days,
-            true,
-            false
+            "Public Sale", 0.01 ether, 50, 10, false, block.timestamp, block.timestamp + 30 days, true, false
         );
         vm.stopPrank();
     }
@@ -187,12 +179,7 @@ contract BaseNFTTest is Test, CodeConstants {
         vm.prank(USER);
         nft.batchMint{value: 0.03 ether}(stageId, 3);
 
-        (
-            uint256 maxSupply,
-            uint256 totalMinted,
-            uint256 remaining,
-            ,,,
-        ) = nft.getSupplyInfo();
+        (uint256 maxSupply, uint256 totalMinted, uint256 remaining,,,,) = nft.getSupplyInfo();
 
         assertEq(maxSupply, 100);
         assertEq(totalMinted, 3);
