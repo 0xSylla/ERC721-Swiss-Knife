@@ -1,0 +1,21 @@
+# Compiler files
+cache/
+out/
+
+#foundry test compilation files
+cache
+out
+test-cache
+
+# Ignores development broadcast logs
+!/broadcast
+/broadcast/*/31337/
+/broadcast/**/dry-run/
+
+# Docs
+docs/
+
+# Dotenv file
+.env
+
+.DS_Store

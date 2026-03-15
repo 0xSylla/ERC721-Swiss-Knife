@@ -1,0 +1,18 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+remappings = [
+    "@limitbreak/creator-token-standards/=lib/creator-token-standards/",
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+    "@layerzerolabs/onft-evm/=lib/devtools/packages/onft-evm/",
+    "@layerzerolabs/oapp-evm/=lib/devtools/packages/oapp-evm/",
+    "@layerzerolabs/lz-evm-protocol-v2/=lib/LayerZero-v2/packages/layerzero-v2/evm/protocol",
+    "@layerzerolabs/lz-evm-messagelib-v2/=lib/LayerZero-v2/packages/layerzero-v2/evm/messagelib",
+    "solidity-bytes-utils/=lib/solidity-bytes-utils/",
+]
+[fuzz]
+runs = 10000
+max_test_rejects = 150000
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
